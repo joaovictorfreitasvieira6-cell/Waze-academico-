@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Sistema de Localização da Italo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="dark-theme.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="register-container">
+        <div class="logo">
+            <i class="fas fa-route"></i>
+            <h1>Sistema de Localização da Italo</h1>
+        </div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <input type="text" id="nome" placeholder="Nome completo" required>
+                <i class="fas fa-user"></i>
+            </div>
+
+            <div class="form-group">
+                <input type="email" id="email" placeholder="Email" required>
+                <i class="fas fa-envelope"></i>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="senha" placeholder="Senha (mín. 6 chars)" required minlength="6">
+                <i class="fas fa-lock"></i>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="confirmarSenha" placeholder="Confirmar senha" required>
+                <i class="fas fa-lock-open"></i>
+            </div>
+
+            <button type="submit" class="register-btn">
+                <i class="fas fa-user-plus"></i> Criar Conta
+            </button>
+        </form>
+
+        <div class="link-page">
+            <p>Já tem conta? <a href="login.html">Entrar</a></p>
+        </div>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            input.addEventListener('blur', function() {
+                if (!this.value) this.parentElement.classList.remove('focused');
+            });
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const nome = document.getElementById('nome').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+            const confirmarSenha = document.getElementById('confirmarSenha').value;
+            
+            if (!nome || !email || !senha) return alert('Preencha todos!');
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert('Email inválido!');
+            if (senha.length < 6) return alert('Senha 6+ chars!');
+            if (senha !== confirmarSenha) return alert('Senhas diferentes!');
+            
+            const btn = document.querySelector('.register-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/auth/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({nome, email, senha})
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('✅ ' + data.message + '\\nLogin agora!');
+                    window.location.href = 'login.html';
+                } else {
+                    alert('❌ ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Erro de conexão. Backend: cd backend && mvn spring-boot:run');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.width = particle.style.height = (Math.random() * 20 + 10) + 'px';
+            particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            document.querySelector('.particles').appendChild(particle);
+            setTimeout(() => particle.remove(), 7000);
+        }
+        setInterval(createParticle, 1000);
+    </script>
+</body>
+</html>
